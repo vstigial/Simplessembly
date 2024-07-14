@@ -1,0 +1,17 @@
+global(_start)
+start_label(_start)
+
+	str_var(db, string, "Hello, World!\n")
+	int_var(db, integer, 12)
+
+	write(string, 15)
+	
+	move(rsi, integer)
+	move(rdi, 15)
+	compare(rsi, rdi)
+	j_equal(end)
+
+start_label(end)
+	str_var(db, ending, "integer equal\n")
+	write(ending, 15)
+	exit(0)

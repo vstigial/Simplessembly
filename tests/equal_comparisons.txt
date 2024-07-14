@@ -1,0 +1,21 @@
+global(_start)
+start_label(_start)
+	
+	move(rsi, 4)
+	move(rdi, 4)
+	compare(rsi, rdi)
+	j_equal(if_equal)
+
+start_label(if_equal)
+	str_var(db, equal_message, "equal!\n")
+	write(equal_message, 8)
+	
+	move(rsi, 3)
+	move(rdi, 7)
+	compare(rsi, rdi)
+	j_nequal(if_nequal)
+
+start_label(if_nequal)
+	str_var(db, nequal_message, "not equal!\n")
+	write(nequal_message, 12)
+	exit(0)

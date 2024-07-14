@@ -12,13 +12,15 @@ out = open("out.asm", 'w')
 out.close()
 
 out = []
+var_count = 0
 line_num = 0
 out.insert(line_num, "SECTION .data\n")
 out.insert(line_num+1, "") # data section to avoid problems with list comprehension
 out.insert(line_num+2, "SECTION .text\n")
-out.insert(line_num+3, "    global _start\n")
-out.insert(line_num+4, "_start:\n")
-line_num += 5
+out.insert(line_num+3, "")
+# out.insert(line_num+3, "    global _start\n")
+# out.insert(line_num+4, "_start:\n")
+line_num += 4
 
 file = open(sys.argv[1], 'r')
 file = file.read()
@@ -42,16 +44,23 @@ for line in lines:
     else:
         continue
 
-    if function_name == "strconst":
+    if function_name == "str_var":
         if '\\n' in args_list[2]:
             args_list[2] = args_list[2].replace('\\n', "\", 10, \"")
             if args_list[2].endswith('""'):
                 args_list[2] = args_list[2][:-4]
             elif args_list[2].endswith('"'):
                 args_list[2] = args_list[2][:-3]
+        else:
+            args_list[2] = args_list[2] + '"'
             # temp = args_list[1].split('\\n')
             # args_list[1] = temp[0] + '"' + ', 13, 10, ' + '"' + temp[1]
         out.insert(2, out[1] + f"    {args_list[1].strip()} {args_list[0].strip()} {args_list[2]}, 0x0\n")
+        var_count += 1
+        line_num += 1
+
+    elif function_name == "int_var":
+        out.insert(2, out[1] + f"    {args_list[1].strip()} {args_list[0].strip()} {args_list[2]}\n")
         line_num += 1
 
     elif function_name == "exit":
@@ -59,6 +68,26 @@ for line in lines:
         out.insert(line_num+1, f"    mov rdi, {args_list[0].strip()}\n")
         out.insert(line_num+2, "    syscall\n")
         line_num += 3
+
+    elif function_name == "push":
+        out.insert(line_num, f"    push {args_list[0]}\n")
+        line_num += 1
+
+    elif function_name == "move":
+        out.insert(line_num, f"    mov {args_list[0].strip()}, {args_list[1]}\n")
+        line_num += 1
+
+    elif function_name == "compare":
+        out.insert(line_num, f"    cmp {args_list[0].strip()}, {args_list[1]}\n")
+        line_num += 1
+
+    elif function_name == "j_equal":
+        out.insert(line_num, f"    je {args_list[0].strip()}\n")
+        line_num += 1
+
+    elif function_name == "j_nequal":
+        out.insert(line_num, f"    jne {args_list[0].strip()}\n")
+        line_num += 1
 
     elif function_name == "write":
         out.insert(line_num, "    mov rax, 1\n")
@@ -68,6 +97,24 @@ for line in lines:
         out.insert(line_num+4, "    syscall\n")
         line_num += 5
 
+    elif function_name == "begin_label":
+        out.insert(line_num, f"{args_list[0].strip()}:\n")
+        line_num += 1
+
+    elif function_name == "global":
+        out.insert(4 + var_count, out[3+var_count] + f"    global {args_list[0].strip()}\n")
+        line_num += 1
+
+    elif function_name == "call":
+        out.insert(line_num, f"    call {args_list[0].strip()}\n")
+        line_num += 1
+
+    elif function_name == "return":
+        try:
+            out.insert(line_num, f"    ret {args_list[0]}\n")
+        except IndexError:
+            out.insert(line_num, "    ret\n")
+        line_num += 1
 
     elif function_name == "syscall":
         args_list[0] = int(args_list[0].strip())
