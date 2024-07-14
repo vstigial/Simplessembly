@@ -1,5 +1,5 @@
 # Simplessembly
-Assembly but the hard stuff is done for you
+Assembly but the hard stuff is done for you.
 Generates x86-64 Nasm assembly
 
 Working on:
