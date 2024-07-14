@@ -43,15 +43,15 @@ for line in lines:
         continue
 
     if function_name == "strconst":
-        if '\\n' in args_list[1]:
-            args_list[1] = args_list[1].replace('\\n', "\", 10, \"")
-            if args_list[1].endswith('""'):
-                args_list[1] = args_list[1][:-4]
-            elif args_list[1].endswith('"'):
-                args_list[1] = args_list[1][:-3]
+        if '\\n' in args_list[2]:
+            args_list[2] = args_list[2].replace('\\n', "\", 10, \"")
+            if args_list[2].endswith('""'):
+                args_list[2] = args_list[2][:-4]
+            elif args_list[2].endswith('"'):
+                args_list[2] = args_list[2][:-3]
             # temp = args_list[1].split('\\n')
             # args_list[1] = temp[0] + '"' + ', 13, 10, ' + '"' + temp[1]
-        out.insert(2, out[1] + f"    {args_list[0].strip()} db {args_list[1]}, 0x0\n")
+        out.insert(2, out[1] + f"    {args_list[1].strip()} {args_list[0].strip()} {args_list[2]}, 0x0\n")
         line_num += 1
 
     elif function_name == "exit":
