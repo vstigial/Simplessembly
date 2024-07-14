@@ -4,7 +4,7 @@
 Assembly but the hard stuff is done for you.
 Generates x86-64 Linux Nasm assembly
 
-Compiles with Nasm, links with the GNU linker
+Generates Assembly, Assembles with Nasm, links with the GNU linker
 
 Working on:
 - Better errors
@@ -19,8 +19,8 @@ Working on:
 global(_start)
 begin_label(_start)
 
-	str_var(db, string, "Hello, World!\n")
-	write(string, 15)
+    str_var(db, string, "Hello, World!\n")
+    write(string, 15)
 
     exit(0)
 ```
@@ -47,7 +47,7 @@ a.out: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, n
 ```
 # Want to manually execute a syscall?
 ```
-syscall(amount_of_arguments_passed,
+syscall(amount_of_arguments_you_want_passed,
         %rax register,
         %rdi register,  /* optional */
         %rsi register,  /* optional */
