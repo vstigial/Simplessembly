@@ -1,0 +1,9 @@
+strconst(message, "Hello, World!\n")
+
+write(message, 15)
+strconst(message2, "Hello, Code!\n")
+write(message2, 14)
+
+syscall(3, 0, 0, message, 15)
+
+exit(0)
