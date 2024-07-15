@@ -25,26 +25,32 @@ line_num += 4
 file = open(sys.argv[1], 'r')
 file = file.read()
 
-lines = file.splitlines()
+lines = file.split(';') # add support for usage of these in strings later
+cur_pos = -1 # 0 indexing
 
 for line in lines:
     line = line.strip()
+    cur_pos +=1
     if line:
         if "(" not in line or ")" not in line:
-            print("Error: Malformed function call: " + str(line))
+            print("Error: Malformed function call p1: " + str(line))
             sys.exit(1)
 
-        function_name, args = line.split("(", 1)
+        function_name, args = line.split("(", 1) 
+
         if args.endswith(")"):
             args = args[:-1]
         else:
-            print("Error: Malformed function call: " + str(line))
+            print("Error: Malformed function call p2: " + str(line))
             sys.exit(1)
         args_list = split_ignore_quotes(args)
     else:
         continue
 
-    if function_name == "str_var":
+    if function_name == "comment": # make better comment system
+        pass                       # this is stupid
+
+    elif function_name == "str_var":
         if '\\n' in args_list[2]:
             args_list[2] = args_list[2].replace('\\n', "\", 10, \"")
             if args_list[2].endswith('""'):
@@ -134,6 +140,7 @@ for line in lines:
             out.insert(line_num+6, f"    mov r9, {args_list[7].strip()}\n")
         out.insert(line_num + args_list[0] + 1, "    syscall\n")
         line_num += args_list[0] + 2
+
 #    out.insert(line_num, "    syscall\n")
 #    line_num += 1
 

@@ -1,0 +1,35 @@
+comment
+(
+ A simple hello world program
+);
+
+comment
+(
+ We start by defining _start as a global,
+ then we begin the body of the label
+);
+
+global(_start); 
+begin_label(_start);
+
+comment
+(
+	We define a string variable with the size of a byte using db
+	We then set the name of the variable to 'hello'
+	Finally, we set the value of the variable to "Hello, World!\n"
+);
+	str_var(db, hello, "Hello, World!\n");
+
+comment
+(
+	We then write the value of the variable into stdout
+	The first argument is the variable we want to write,
+	and the second is the length that you want to write
+);
+	write(hello, 15);
+	
+comment
+(
+	'exit' takes on argument, the exitcode, and is required to ensure your program executes correctly
+);
+	exit(0);
