@@ -16,13 +16,13 @@ Working on:
 
 # A Hello World
 ```
-global(_start)
-begin_label(_start)
+global(_start);
+begin_label(_start);
 
-    str_var(db, string, "Hello, World!\n")
-    write(string, 15)
+    str_var(db, string, "Hello, World!\n");
+    write(string, 15);
 
-    exit(0)
+    exit(0);
 ```
 ### This generates the required assembly code:
 ```assembly
@@ -55,5 +55,5 @@ syscall(amount_of_arguments_you_want_passed,
         %r10 register,  /* optional */
         %r8  register,  /* optional */
         %r9  register   /* optional */
-       )
+       );
 ```
