@@ -24,12 +24,12 @@ comment
 (
 	We then write the value of the variable into stdout
 	The first argument is the variable we want to write,
-	and the second is the length that you want to write
+	and the second is the length that we want to write
 );
 	write(hello, 15);
 	
 comment
 (
-	'exit' takes on argument, the exitcode, and is required to ensure your program executes correctly
+	'exit' takes one argument, the exitcode, and is required to ensure your program exits correctly
 );
 	exit(0);
