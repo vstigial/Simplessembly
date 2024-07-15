@@ -8,12 +8,13 @@ Generates Assembly, Assembles with Nasm, links with the GNU linker
 
 Working on:
 - Better errors
-- Common syscall support (syscall command)
+- Common syscall support (syscall function)
 - C externs
-- Uninitialized data
+- Uninitialized data (reserve function)
 - Control flow (wip)
 - Interaction with the stack
-
+- all of this is finished through the raw_asm function if you really think about it 😀 (except better errors)
+  
 # A Hello World
 ```
 global(_start);
