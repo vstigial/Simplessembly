@@ -32,11 +32,12 @@ for line in lines:
     line = line.strip()
     cur_pos +=1
     if line:
-        if "(" not in line or ")" not in line:
+        if "(" not in line and ")" not in line:
             print("Error: Malformed function call p1: " + str(line))
             sys.exit(1)
 
-        function_name, args = line.split("(", 1) 
+        function_name, args = line.strip().split("(", 1)
+        function_name = function_name.strip()
 
         if args.endswith(")"):
             args = args[:-1]
@@ -44,11 +45,17 @@ for line in lines:
             print("Error: Malformed function call p2: " + str(line))
             sys.exit(1)
         args_list = split_ignore_quotes(args)
+
     else:
         continue
 
     if function_name == "comment": # make better comment system
         pass                       # this is stupid
+
+    elif function_name == "raw_asm":
+        print("at raw_asm")
+        out.insert(line_num, f"{args_list[0][1:]}") # 1:-1 for quotes
+        line_num += 1
 
     elif function_name == "str_var":
         if '\\n' in args_list[2]:

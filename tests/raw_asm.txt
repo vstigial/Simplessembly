@@ -1,0 +1,9 @@
+global(_start);
+begin_label(_start);
+
+raw_asm
+("
+mov rax, 60
+mov rdi, 0
+syscall
+");
