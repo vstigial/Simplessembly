@@ -1,0 +1,7 @@
+global(_start);
+begin_label(_start);
+	reserve(resb, 8, buf);
+	int_var(db, num, 12);
+	global(a_global);
+
+	exit(0);

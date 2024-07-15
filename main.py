@@ -12,15 +12,18 @@ out = open("out.asm", 'w')
 out.close()
 
 out = []
-var_count = 0
+dat_num = 0
+bss_num = 0
 line_num = 0
-out.insert(line_num, "SECTION .data\n")
+out.insert(line_num, "SECTION .bss\n")
 out.insert(line_num+1, "") # data section to avoid problems with list comprehension
-out.insert(line_num+2, "SECTION .text\n")
+out.insert(line_num+2, "SECTION .data\n")
 out.insert(line_num+3, "")
+out.insert(line_num+4, "SECTION .text\n")
+out.insert(line_num+5, "")
 # out.insert(line_num+3, "    global _start\n")
 # out.insert(line_num+4, "_start:\n")
-line_num += 4
+line_num += 6
 
 file = open(sys.argv[1], 'r')
 file = file.read()
@@ -53,8 +56,12 @@ for line in lines:
         pass                       # this is stupid
 
     elif function_name == "raw_asm":
-        print("at raw_asm")
         out.insert(line_num, f"{args_list[0][1:]}") # 1:-1 for quotes
+        line_num += 1
+
+    elif function_name == "reserve":
+        out.insert(2, out[1] + f"    {args_list[2].strip()} {args_list[0].strip()} {args_list[1].strip()}\n")
+        bss_num += 1
         line_num += 1
 
     elif function_name == "str_var":
@@ -68,12 +75,13 @@ for line in lines:
             args_list[2] = args_list[2] + '"'
             # temp = args_list[1].split('\\n')
             # args_list[1] = temp[0] + '"' + ', 13, 10, ' + '"' + temp[1]
-        out.insert(2, out[1] + f"    {args_list[1].strip()} {args_list[0].strip()} {args_list[2]}, 0x0\n")
-        var_count += 1
+        out.insert(4+bss_num, out[3+bss_num] + f"    {args_list[1].strip()} {args_list[0].strip()} {args_list[2]}, 0x0\n")
+        dat_num += 1
         line_num += 1
 
     elif function_name == "int_var":
-        out.insert(2, out[1] + f"    {args_list[1].strip()} {args_list[0].strip()} {args_list[2]}\n")
+        out.insert(4+bss_num, out[3+bss_num] + f"    {args_list[1].strip()} {args_list[0].strip()} {args_list[2]}\n")
+        dat_num += 1
         line_num += 1
 
     elif function_name == "exit":
@@ -115,7 +123,7 @@ for line in lines:
         line_num += 1
 
     elif function_name == "global":
-        out.insert(4 + var_count, out[3+var_count] + f"    global {args_list[0].strip()}\n")
+        out.insert(6 + bss_num+dat_num, out[5+dat_num+bss_num] + f"    global {args_list[0].strip()}\n")
         line_num += 1
 
     elif function_name == "call":
