@@ -59,12 +59,16 @@ for line in lines:
     if function_name == "comment": # make better comment system
         pass                       # this is stupid
 
+    elif function_name == "external":
+        out.insert(0, f"extern {args_list[0].strip()}\n")
+        line_num += 1
+
     elif function_name == "raw_asm":
-        out.insert(line_num, f"{args_list[0][1:]}") # 1:-1 for quotes
+        out.insert(line_num, f"{args_list[0]}\n")
         line_num += 1
 
     elif function_name == "reserve":
-        out.insert(2, out[1] + f"    {args_list[2].strip()} {args_list[0].strip()} {args_list[1].strip()}\n")
+        out.insert(2, f"    {args_list[2].strip()} {args_list[0].strip()} {args_list[1].strip()}\n")
         bss_num += 1
         line_num += 1
 
@@ -80,18 +84,21 @@ for line in lines:
                     increment += 1
                     if increment == args_list[2].strip().count("\\n"):
                         break;
-            split_res[increment] = f"    {args_list[0].strip()} \"{split_res[increment].strip()}\", 0x0\n"
+            if split_res[increment] != "":
+                split_res[increment] = f"    {args_list[0].strip()} \"{split_res[increment].strip()}\", 0x0\n"
+            else:
+                split_res[0] = split_res[0][:-1] + ", 0x0\n"
             args_list[2] = ''.join(split_res)
-            out.insert(4+bss_num, out[3+bss_num] + f"    {args_list[1]}: {args_list[2]}\n")
+            out.insert(4+bss_num, f"   {args_list[1]}: {args_list[2]}\n")
 
         else:
-            out.insert(4+bss_num, out[3+bss_num] + f"    {args_list[1].strip()}: {args_list[0].strip()} {args_list[2]}, 0x0\n")
+            out.insert(4+bss_num, f"    {args_list[1].strip()}: {args_list[0].strip()} {args_list[2]}\", 0x0\n")
             args_list[2] = args_list[2] + '"'
         dat_num += 1
         line_num += 1
 
     elif function_name == "int_var":
-        out.insert(4+bss_num, out[3+bss_num] + f"    {args_list[1].strip()} {args_list[0].strip()} {args_list[2]}\n")
+        out.insert(4+bss_num, f"    {args_list[1].strip()} {args_list[0].strip()} {args_list[2]}\n")
         dat_num += 1
         line_num += 1
 
@@ -176,7 +183,7 @@ with open("out.asm", 'w') as file:
 with open("out.asm", 'r') as file:
     print(file.read())
 
-os.system("nasm -felf64 out.asm && ld out.o && rm out.asm out.o")
+os.system("nasm -felf64 out.asm && gcc out.o -m64 -no-pie && rm out.asm out.o")
 
 # subprocess.run(["nasm", "-felf64", "out.asm"])
 # subprocess.run(["ld", "out.o"])
