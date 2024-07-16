@@ -1,0 +1,5 @@
+global(_start);
+begin_label(_start);
+	str_var(db, s, "a\nb\nc\nd");
+	write(s, 11);
+	exit(0);

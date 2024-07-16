@@ -28,7 +28,11 @@ line_num += 6
 file = open(sys.argv[1], 'r')
 file = file.read()
 
-lines = file.split(';') # add support for usage of these in strings later
+pattern = re.compile(r'''((?:[^;"']|"[^"]*"|'[^']*')+)''')
+file = pattern.findall(file)
+lines = [piece.strip('"\'') for piece in file]
+
+# lines = file.split(';') # add support for usage of these in strings later
 cur_pos = -1 # 0 indexing
 
 for line in lines:
@@ -66,16 +70,23 @@ for line in lines:
 
     elif function_name == "str_var":
         if '\\n' in args_list[2]:
-            args_list[2] = args_list[2].replace('\\n', "\", 10, \"")
-            if args_list[2].endswith('""'):
-                args_list[2] = args_list[2][:-4]
-            elif args_list[2].endswith('"'):
-                args_list[2] = args_list[2][:-3]
+            split_res = args_list[2].strip().split('\\n')
+            increment = 0
+            split_res[increment] = f"{args_list[0].strip()} {split_res[increment].strip()}\", 0xD, 0xA\n"
+            increment += 1
+            if args_list[2].strip().count("\\n") > 1:
+                for newline in split_res:
+                    split_res[increment] = f"    {args_list[0].strip()} \"{split_res[increment].strip()}\", 0xD, 0xA\n"
+                    increment += 1
+                    if increment == args_list[2].strip().count("\\n"):
+                        break;
+            split_res[increment] = f"    {args_list[0].strip()} \"{split_res[increment].strip()}\", 0x0\n"
+            args_list[2] = ''.join(split_res)
+            out.insert(4+bss_num, out[3+bss_num] + f"    {args_list[1]}: {args_list[2]}\n")
+
         else:
+            out.insert(4+bss_num, out[3+bss_num] + f"    {args_list[1].strip()}: {args_list[0].strip()} {args_list[2]}, 0x0\n")
             args_list[2] = args_list[2] + '"'
-            # temp = args_list[1].split('\\n')
-            # args_list[1] = temp[0] + '"' + ', 13, 10, ' + '"' + temp[1]
-        out.insert(4+bss_num, out[3+bss_num] + f"    {args_list[1].strip()} {args_list[0].strip()} {args_list[2]}, 0x0\n")
         dat_num += 1
         line_num += 1
 
