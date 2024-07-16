@@ -1,0 +1,23 @@
+global(main);
+begin_label(main);
+	external(printf);
+
+	str_var(db, fmt, "%s %s %s %s %s %s %s %s\n");
+
+	str_var(db, msg1, "msg");
+	str_var(db, msg2, "msg");
+	str_var(db, msg3, "msg");
+	str_var(db, msg4, "msg");
+	str_var(db, msg5, "msg");
+	str_var(db, msg6, "msg");
+	str_var(db, msg7, "msg");
+	str_var(db, msg8, "msg");
+
+	call(printf, fmt, msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8);
+
+	alias(exit_w_3, "
+    mov rax, 60
+    mov rdi, 3
+    syscall
+");
+	exit_w_3();

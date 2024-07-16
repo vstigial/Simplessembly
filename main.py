@@ -8,10 +8,8 @@ def split_ignore_quotes(args):
     args_list = [piece.strip('"\'') for piece in args_list]
     return args_list
 
-out = open("out.asm", 'w')
-out.close()
-
 out = []
+aliases = {}
 dat_num = 0
 bss_num = 0
 line_num = 0
@@ -56,12 +54,21 @@ for line in lines:
     else:
         continue
 
+    # todo: refactor if else chain to use match case
+
     if function_name == "comment": # make better comment system
         pass                       # this is stupid
 
     elif function_name == "external":
         out.insert(0, f"extern {args_list[0].strip()}\n")
         line_num += 1
+
+    elif function_name in aliases:
+        out.insert(line_num, f"{aliases[function_name]}\n")
+        line_num += 1
+
+    elif function_name == "alias":
+        aliases[args_list[0]] = args_list[1].strip()[1:] # 1: for quote
 
     elif function_name == "raw_asm":
         out.insert(line_num, f"{args_list[0]}\n")
@@ -145,8 +152,31 @@ for line in lines:
         line_num += 1
 
     elif function_name == "call":
-        out.insert(line_num, f"    call {args_list[0].strip()}\n")
-        line_num += 1
+        out.insert(line_num, "    xor rax, rax\n")
+        increment = 0
+
+        for arg in args_list:
+            match increment:
+                case 0:
+                    out.insert(line_num+1, f"    mov rdi, {args_list[1]}\n")
+                case 1:
+                    out.insert(line_num+2, f"    mov rsi, {args_list[2]}\n")
+                case 2:
+                    out.insert(line_num+3, f"    mov rdx, {args_list[3]}\n")
+                case 3:
+                    out.insert(line_num+4, f"    mov rcx, {args_list[4]}\n")
+                case 4:
+                    out.insert(line_num+5, f"    mov r8, {args_list[5]}\n")
+                case 5:
+                    out.insert(line_num+6, f"    mov r9, {args_list[6]}\n")
+                case increment if increment > 5 and increment <= len(args_list) - 1:
+                    if increment < len(args_list) - 1:
+                        out.insert(line_num+increment+1, f"    push {args_list[increment+1]}\n")
+            increment += 1
+        out.insert(line_num+increment+2, f"    and rsp, -16\n")
+        out.insert(line_num+increment+3, f"    call {args_list[0].strip()}\n")
+
+        line_num += 3+increment
 
     elif function_name == "return":
         try:
