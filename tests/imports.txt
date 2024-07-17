@@ -1,0 +1,10 @@
+use("std/std.txt");
+
+global(main);
+begin_label(main);
+	str_var(db, hello, "Hello, World!");
+	str_var(db, fmt, "%s\n");
+
+	printf(fmt, hello);
+
+	exit(0);

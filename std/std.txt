@@ -1,0 +1,110 @@
+alias
+(
+    close,
+    "
+    mov rax, 0x03
+    mov rdi, %{arg0}
+    syscall
+    "
+);
+
+alias
+(
+    open,
+    "
+    mov rax, 0x02
+    mov rdi, %{arg0}
+    mov rsi, %{arg1}
+    mov rdx, %{arg2}
+    syscall
+    "
+);
+
+alias
+(
+    exit,
+    "
+    mov rax, 0x3c
+    mov rdi, %{arg0}
+    syscall
+    "
+);
+
+
+comment
+(
+	-------------------------------------------------------------------
+	-------------------------- IO OPERATIONS --------------------------
+	-------------------------------------------------------------------
+);
+
+
+alias
+(
+    fdwrite,
+    "
+    mov rax, 0x01
+    mov rdi, %{arg0}
+    mov rsi, %{arg1}
+    mov rdx, %{arg2}
+    syscall
+    "
+);
+
+alias
+(
+    write,
+    "
+    mov rax, 0x01
+    mov rdi, 0x01
+    mov rsi, %{arg0}
+    mov rdx, %{arg1}
+    syscall
+    "
+);
+
+alias
+(
+    fdread,
+    "
+    mov rax, 0x00
+    mov rdi, %{arg0}
+    mov rsi, %{arg1}
+    mov rdx, %{arg2}
+    syscall
+    "
+);
+
+alias
+(
+    read, 
+    "
+    mov rax, 0x00
+    mov rdi, 0x00
+    mov rsi, %{arg0}
+    mov rdx, %{arg1}
+    syscall
+    "
+);
+
+
+external(printf);
+alias
+(
+    variatic,
+    printf,
+    "
+    mov rbp, rsp
+    xor rax, rax
+    mov rdi, %{arg0}
+    mov rsi, %{arg1}
+    mov rdx, %{arg2}
+    mov rcx, %{arg3}
+    mov r9, %{arg4}
+    mov r8, %{arg5}
+    push %rl{...}
+    and rsp, -16
+    call printf
+    mov rsp, rbp
+    "
+);

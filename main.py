@@ -24,8 +24,8 @@ out.insert(line_num+5, "")
 # out.insert(line_num+4, "_start:\n")
 line_num += 6
 
-file = open(sys.argv[1], 'r')
-file = file.read()
+with open(sys.argv[1], 'r') as file:
+    file = file.read()
 
 pattern = re.compile(r'''((?:[^;"']|"[^"]*"|'[^']*')+)''')
 file = pattern.findall(file)
@@ -44,13 +44,14 @@ for line in lines:
 
         function_name, args = line.strip().split("(", 1)
         function_name = function_name.strip()
+        args = args.strip()
 
         if args.endswith(")"):
-            args = args[:-1]
+            args = args[:-1].strip()
         else:
             print("Error: Malformed function call p2: " + str(line))
             sys.exit(1)
-        args_list = split_ignore_quotes(args)
+        args_list = split_ignore_quotes(args.strip())
 
     else:
         continue
@@ -58,6 +59,15 @@ for line in lines:
     # todo: refactor if else chain to use match case
     if function_name == "comment": # make better comment system
         pass                       # this is stupid
+
+    elif function_name == "use":
+        with open(args_list[0], 'r') as using:
+            using = pattern.findall(using.read())
+            u_lines = [piece.strip('"\'') for piece in using]
+            inc = 1
+            for line in u_lines:
+                inc += 1
+                lines.insert(cur_pos + inc, line)
 
     elif function_name == "external":
         out.insert(0, f"extern {args_list[0].strip()}\n")
@@ -86,16 +96,10 @@ for line in lines:
             tincrement += 1
         increment = 0
 
-        prov_args = 0
-        for line in pos:
-            if "%{arg" in line and "}" in line:
-                prov_args += 1
-
         for arg in args_list:
             tmp = tmp.replace("%{arg"+str(increment)+"}", arg.strip())
-            args_list.remove(arg)
 
-            if len(args_list) > 0 and "%{arg" not in tmp:
+            if args_list != None and "%{arg" not in tmp:
                 pos[tincrement] = pos[tincrement].replace("%rl{...}", '')
                 tmp = tmp.replace("%rl{...}", ', '.join(args_list).replace(', ', '\n'+pos[tincrement]))
 
@@ -141,7 +145,7 @@ for line in lines:
             if split_res[increment] != "":
                 split_res[increment] = f"    {args_list[0].strip()} \"{split_res[increment].strip()}\", 0x0\n"
             else:
-                split_res[0] = split_res[0][:-1] + ", 0x0\n"
+                split_res[0] = split_res[0][:-1] + ", 0x0"
             args_list[2] = ''.join(split_res)
             out.insert(4+bss_num, f"   {args_list[1]}: {args_list[2]}\n")
 
@@ -155,12 +159,6 @@ for line in lines:
         out.insert(4+bss_num, f"    {args_list[1].strip()} {args_list[0].strip()} {args_list[2]}\n")
         dat_num += 1
         line_num += 1
-
-    elif function_name == "exit":
-        out.insert(line_num, "    mov rax, 60\n")
-        out.insert(line_num+1, f"    mov rdi, {args_list[0].strip()}\n")
-        out.insert(line_num+2, "    syscall\n")
-        line_num += 3
 
     elif function_name == "push":
         out.insert(line_num, f"    push {args_list[0]}\n")
@@ -181,14 +179,6 @@ for line in lines:
     elif function_name == "j_nequal":
         out.insert(line_num, f"    jne {args_list[0].strip()}\n")
         line_num += 1
-
-    elif function_name == "write":
-        out.insert(line_num, "    mov rax, 1\n")
-        out.insert(line_num+1, "    mov rdi, 1\n")
-        out.insert(line_num+2, f"    mov rsi, {args_list[0].strip()}\n")
-        out.insert(line_num+3, f"    mov rdx, {args_list[1].strip()}\n")
-        out.insert(line_num+4, "    syscall\n")
-        line_num += 5
 
     elif function_name == "begin_label":
         out.insert(line_num, f"{args_list[0].strip()}:\n")
@@ -259,9 +249,7 @@ for line in lines:
 
 with open("out.asm", 'w') as file:
     file.writelines(out)
-
-with open("out.asm", 'r') as file:
-    print(file.read())
+print(''.join(out))
 
 os.system("nasm -felf64 out.asm && gcc out.o -m64 -no-pie && rm out.asm out.o")
 
