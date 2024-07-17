@@ -2,12 +2,9 @@ global(main);
 begin_label(main);
 	external(printf);
 	
-	str_var(db, fmt, "%s\n");
+	str_var(db, fmt, "%s %s %s %s %s %s %s %s %s %s %s %s\n");
 	str_var(db, msg, "Hello World!");
 
-	move(rdi, fmt);
-	move(rsi, msg);
-    raw_asm("and rsp, -16");
-	call(printf);
+	call(printf, fmt, msg, msg, msg, msg, msg, msg, msg, msg, msg, msg, msg, msg);
 
 	exit(0);

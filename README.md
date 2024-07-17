@@ -4,16 +4,15 @@
 Assembly but the hard stuff is done for you.
 Generates x86-64 Linux Nasm assembly
 
-Generates Assembly, Assembles with Nasm, links with the GNU linker
+Generates Assembly, Assembles with Nasm, links with the GNU linker (using GCC)
 
 Working on:
+- Including other simplessembly files
+- Aliases written in simplessembly (currently written in regular nasm asm)
 - Better errors
-- Common syscall support (syscall function)
-- C externs
-- Uninitialized data (reserve function)
 - Control flow (wip)
 - Interaction with the stack (push function) (wip)
-- all of this is finished through the raw_asm function if you really think about it 😀 (except better errors)
+
   
 # A Hello World 
 ### See [tests/hello_world.txt](https://github.com/vstigial/Simplessembly/blob/main/tests/hello_world.txt) for a walkthrough

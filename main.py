@@ -10,6 +10,7 @@ def split_ignore_quotes(args):
 
 out = []
 aliases = {}
+v_aliases = {}
 dat_num = 0
 bss_num = 0
 line_num = 0
@@ -55,7 +56,6 @@ for line in lines:
         continue
 
     # todo: refactor if else chain to use match case
-
     if function_name == "comment": # make better comment system
         pass                       # this is stupid
 
@@ -73,8 +73,49 @@ for line in lines:
         # out.insert(line_num, f"{aliases[function_name]}\n")
         line_num += 1
 
+    elif function_name in v_aliases:
+        tmp = v_aliases[function_name]
+
+        args_amt = len(args_list)
+
+        pos = tmp.splitlines()
+        tincrement = 0
+        for line in pos:
+            if line.find("%rl{...}") != -1:
+                break
+            tincrement += 1
+        increment = 0
+
+        prov_args = 0
+        for line in pos:
+            if "%{arg" in line and "}" in line:
+                prov_args += 1
+
+        for arg in args_list:
+            tmp = tmp.replace("%{arg"+str(increment)+"}", arg.strip())
+            args_list.remove(arg)
+
+            if len(args_list) > 0 and "%{arg" not in tmp:
+                pos[tincrement] = pos[tincrement].replace("%rl{...}", '')
+                tmp = tmp.replace("%rl{...}", ', '.join(args_list).replace(', ', '\n'+pos[tincrement]))
+
+            increment += 1
+        increment = 0
+        tmp2 = []
+        for line in tmp.splitlines():
+            if "%{arg" not in line and "%rl{...}" not in line:
+                tmp2.append(line)
+
+        tmp = '\n'.join(tmp2).replace("%{...}", args)
+        out.insert(line_num, tmp+'\n')
+
+        line_num += 1
+
     elif function_name == "alias":
-        aliases[args_list[0]] = args_list[1].strip()[1:] # 1: for quote
+        if args_list[0] == "variatic":
+            v_aliases[args_list[1].strip()] = args_list[2].strip()[1:]
+        else:
+            aliases[args_list[0].strip()] = args_list[1].strip()[1:] # 1: for quote
 
     elif function_name == "raw_asm":
         out.insert(line_num, f"{args_list[0]}\n")
@@ -162,6 +203,8 @@ for line in lines:
         increment = 0
 
         for arg in args_list:
+            if increment >= len(args_list) -1:
+                break
             match increment:
                 case 0:
                     out.insert(line_num+1, f"    mov rdi, {args_list[1]}\n")
@@ -175,14 +218,15 @@ for line in lines:
                     out.insert(line_num+5, f"    mov r8, {args_list[5]}\n")
                 case 5:
                     out.insert(line_num+6, f"    mov r9, {args_list[6]}\n")
-                case increment if increment > 5 and increment <= len(args_list) - 1:
-                    if increment < len(args_list) - 1:
-                        out.insert(line_num+increment+1, f"    push {args_list[increment+1]}\n")
+                case increment if increment > 5 and increment < len(args_list) -1:
+                    out.insert(line_num+increment+1, f"    push {args_list[increment+1]}\n")
             increment += 1
-        out.insert(line_num+increment+2, f"    and rsp, -16\n")
-        out.insert(line_num+increment+3, f"    call {args_list[0].strip()}\n")
+        out.insert(line_num+increment+2, "    mov rbp, rsp\n")
+        out.insert(line_num+increment+3, "    and rsp, -16\n")
+        out.insert(line_num+increment+4, f"    call {args_list[0].strip()}\n")
+        out.insert(line_num+increment+5, "    mov rsp, rbp\n")
 
-        line_num += 3+increment
+        line_num += 5+increment
 
     elif function_name == "return":
         try:
