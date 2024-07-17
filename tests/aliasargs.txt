@@ -1,0 +1,16 @@
+global(main);
+begin_label(main);
+	alias(read, "
+    mov rax, 0
+    mov rdi, 0
+    mov rsi, %{arg0}
+    mov rdx, %{arg1}
+    syscall
+	");
+
+	reserve(resb, 8, msgbuf);
+
+	read(msgbuf, 15);
+	write(msgbuf, 15);
+
+	exit(0);

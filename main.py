@@ -64,7 +64,13 @@ for line in lines:
         line_num += 1
 
     elif function_name in aliases:
-        out.insert(line_num, f"{aliases[function_name]}\n")
+        increment = 0
+        tmp = aliases[function_name]
+        for arg in args_list:
+            tmp = tmp.replace("%{arg"+str(increment)+"}", arg.strip())
+            increment += 1
+        out.insert(line_num, f"{tmp}\n")
+        # out.insert(line_num, f"{aliases[function_name]}\n")
         line_num += 1
 
     elif function_name == "alias":
