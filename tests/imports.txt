@@ -1,4 +1,5 @@
 use("std/std.txt");
+external(printf)
 
 global(main);
 begin_label(main);

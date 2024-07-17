@@ -4,10 +4,10 @@
 Assembly but the hard stuff is done for you.
 Generates x86-64 Linux Nasm assembly
 
-Generates Assembly, Assembles with Nasm, links with the GNU linker (using GCC)
+Generates Assembly, Assembles with Nasm, links with the GNU linker
 
 Working on:
-- Including other simplessembly files
+- Including other simplessembly files (use function)
 - Aliases written in simplessembly (currently written in regular nasm asm)
 - Better errors
 - Control flow (wip)
@@ -17,6 +17,8 @@ Working on:
 # A Hello World 
 ### See [tests/hello_world.txt](https://github.com/vstigial/Simplessembly/blob/main/tests/hello_world.txt) for a walkthrough
 ```
+use("std/std.txt");
+
 global(_start);
 begin_label(_start);
 
@@ -27,17 +29,20 @@ begin_label(_start);
 ```
 ### This generates the required assembly code:
 ```assembly
+SECTION .bss
 SECTION .data
-    string db  "Hello, World!", 10, 0x0
+    string: db "Hello, World!", 0xD, 0xA, 0x0
 SECTION .text
     global _start
 _start:
-    mov rax, 1
-    mov rdi, 1
+
+    mov rax, 0x01
+    mov rdi, 0x01
     mov rsi, string
     mov rdx, 15
     syscall
-    mov rax, 60
+
+    mov rax, 0x3c
     mov rdi, 0
     syscall
 ```

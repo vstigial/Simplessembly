@@ -251,7 +251,10 @@ with open("out.asm", 'w') as file:
     file.writelines(out)
 print(''.join(out))
 
-os.system("nasm -felf64 out.asm && gcc out.o -m64 -no-pie && rm out.asm out.o")
+if '-linkc' in sys.argv:
+    os.system("nasm -felf64 out.asm && gcc out.o -m64 -no-pie && rm out.asm out.o")
+else:
+    os.system("nasm -felf64 out.asm && ld out.o && rm out.asm out.o")
 
 # subprocess.run(["nasm", "-felf64", "out.asm"])
 # subprocess.run(["ld", "out.o"])
