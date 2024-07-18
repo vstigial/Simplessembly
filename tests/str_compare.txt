@@ -1,0 +1,27 @@
+use("std/std.txt");
+external(printf);
+
+global(main);
+begin_label(main);
+
+    str_var(db, fmt, "Comparing %s with %s\n");
+    str_var(db, string, "Hello, World!");
+    str_var(db, string2, "Goodbye, World!");
+    str_var(db, efmt, "Result: %d\n");
+
+    printf(fmt, string, string2);
+
+    str_compare(string, string, equal, nequal);
+    str_compare(string, string2, equal, nequal);
+
+    exit(0);
+
+begin_label(equal);
+    raw_asm("    xor rdx, rdx");
+    printf(efmt, 1);
+    return();
+
+begin_label(nequal);
+    raw_asm("    xor rdx, rdx");
+    printf(efmt, 0);
+    return();

@@ -12,6 +12,7 @@ Working on:
 - Better errors
 - Control flow (wip)
 - Interaction with the stack (push function) (wip)
+- [Comparing strings](https://github.com/vstigial/Simplessembly/blob/main/tests/str_compare.txt) (wip)
 
   
 # A Hello World 

@@ -13,6 +13,7 @@ aliases = {}
 v_aliases = {}
 dat_num = 0
 bss_num = 0
+txt_num = 0
 line_num = 0
 out.insert(line_num, "SECTION .bss\n")
 out.insert(line_num+1, "") # data section to avoid problems with list comprehension
@@ -70,8 +71,25 @@ for line in lines:
                 lines.insert(cur_pos + inc, line)
 
     elif function_name == "external":
-        out.insert(0, f"extern {args_list[0].strip()}\n")
+        out.insert(6 + bss_num+dat_num, out[5+dat_num+bss_num] + f"    extern {args_list[0].strip()}\n")
+        txt_num += 1
         line_num += 1
+
+    elif function_name == "str_compare":
+        # todo: remove the need for boilerplate asm in jumped functions
+        out.insert(6 + bss_num+dat_num+txt_num, f"loop_{str(line_num)}:\n")
+        out.insert(6 + bss_num+dat_num+txt_num+1, f"     mov al, [{args_list[0].strip()} + rdx]\n")
+        out.insert(6 + bss_num+dat_num+txt_num+2, f"     mov bl, [{args_list[1].strip()} + rdx]\n")
+        out.insert(6 + bss_num+dat_num+txt_num+3, "     inc rdx\n")
+        out.insert(6 + bss_num+dat_num+txt_num+4, "     cmp al, bl\n")
+        out.insert(6 + bss_num+dat_num+txt_num+5, f"     jne {args_list[3].strip()}\n")
+        out.insert(6+ bss_num+dat_num+txt_num+6, "     cmp al, 0\n")
+        out.insert(6 + bss_num+dat_num+txt_num+7, f"     je {args_list[2].strip()}\n")
+        out.insert(6 + bss_num+dat_num+txt_num+8, f"     jmp loop_{str(line_num)}\n")
+
+        out.insert(line_num+10, "    xor rdx, rdx\n")
+        out.insert(line_num+11, f"    call loop_{str(line_num)}\n")
+        line_num += 11
 
     elif function_name in aliases:
         increment = 0
@@ -186,6 +204,7 @@ for line in lines:
 
     elif function_name == "global":
         out.insert(6 + bss_num+dat_num, out[5+dat_num+bss_num] + f"    global {args_list[0].strip()}\n")
+        txt_num +=1
         line_num += 1
 
     elif function_name == "call":
