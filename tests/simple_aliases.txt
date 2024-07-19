@@ -1,0 +1,58 @@
+alias
+(
+    raw,
+    exit, 
+    "
+    mov rax, 0x3c
+    mov rdi, %{arg0}
+    syscall
+    "
+);
+
+alias
+(
+    raw,
+    variatic,
+    printf,
+    "
+    mov rbp, rsp
+    xor rax, rax
+    mov rdi, %{arg0}
+    mov rsi, %{arg1}
+    mov rdx, %{arg2}
+    mov rcx, %{arg3}
+    mov r9, %{arg4}
+    mov r8, %{arg5}
+    push %rl{...}
+    and rsp, -16
+    call printf
+    mov rsp, rbp
+    "
+);
+
+alias
+(
+    simple,
+    variatic,
+    simp_printf,
+    "
+    printf(%{...});
+    "
+);
+
+alias
+(
+    simple,
+    simp_begin_label,
+    "
+    begin_label(%{arg0});
+    "
+);
+external(printf);
+global(main);
+simp_begin_label(main);
+	str_var(db, test, "testing\n");
+
+	printf(test);
+	simp_printf(test);
+	exit(0);

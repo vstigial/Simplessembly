@@ -11,6 +11,8 @@ def split_ignore_quotes(args):
 out = []
 aliases = {}
 v_aliases = {}
+s_aliases = {}
+s_v_aliases = {}
 dat_num = 0
 bss_num = 0
 txt_num = 0
@@ -81,9 +83,10 @@ for line in lines:
         # todo: remove the need for boilerplate asm in jumped functions
         if not ret_func_def:
             out.insert(6 + bss_num+dat_num+txt_num, f"return_label:\n")
-            out.insert(6 + bss_num+dat_num+txt_num+1, f"    ret\n")
+            out.insert(6 + bss_num+dat_num+txt_num+1, f"    xor rdx, rdx\n")
+            out.insert(6 + bss_num+dat_num+txt_num+2, f"    ret\n")
             ret_func_def = True
-            ret_lines = 2
+            ret_lines = 3
         out.insert(6 + bss_num+dat_num+txt_num+ret_lines, f"loop_{str(line_num)}:\n")
         out.insert(6 + bss_num+dat_num+txt_num+1+ret_lines, f"    mov al, [{args_list[0].strip()} + rdx]\n")
         out.insert(6 + bss_num+dat_num+txt_num+2+ret_lines, f"    mov bl, [{args_list[1].strip()} + rdx]\n")
@@ -104,33 +107,50 @@ for line in lines:
         out.insert(line_num+11+ret_lines, f"    call loop_{str(line_num)}\n")
         line_num += 11+ret_lines
 
-    elif function_name in aliases:
+    elif function_name in aliases or function_name in s_aliases:
         increment = 0
-        tmp = aliases[function_name]
+        if function_name in aliases:
+            tmp = aliases[function_name]
+        else:
+            tmp = s_aliases[function_name]
+
         for arg in args_list:
             tmp = tmp.replace("%{arg"+str(increment)+"}", arg.strip())
             increment += 1
-        out.insert(line_num, f"{tmp}\n")
+        if function_name in aliases:
+            out.insert(line_num, f"{tmp}\n")
+        else:
+            inc = 0
+            tmp = pattern.findall(tmp)
+            tmp_lines = [piece.strip('"\'') for piece in tmp]
+            for line in tmp_lines:
+                inc += 1
+                lines.insert(cur_pos+inc, line)
         # out.insert(line_num, f"{aliases[function_name]}\n")
         line_num += 1
 
-    elif function_name in v_aliases:
-        tmp = v_aliases[function_name]
-
+    elif function_name in v_aliases or function_name in s_v_aliases:
+        if function_name in v_aliases:
+            tmp = v_aliases[function_name]
+        else:
+            tmp = s_v_aliases[function_name]
         args_amt = len(args_list)
 
         pos = tmp.splitlines()
         tincrement = 0
         for line in pos:
             if line.find("%rl{...}") != -1:
+                found = True
                 break
+            else:
+                found = False
             tincrement += 1
         increment = 0
 
         for arg in args_list:
             tmp = tmp.replace("%{arg"+str(increment)+"}", arg.strip())
 
-            if args_list != None and "%{arg" not in tmp:
+            if args_list != None and "%{arg" not in tmp and found:
                 pos[tincrement] = pos[tincrement].replace("%rl{...}", '')
                 tmp = tmp.replace("%rl{...}", ', '.join(args_list).replace(', ', '\n'+pos[tincrement]))
 
@@ -142,15 +162,30 @@ for line in lines:
                 tmp2.append(line)
 
         tmp = '\n'.join(tmp2).replace("%{...}", args)
-        out.insert(line_num, tmp+'\n')
+
+        if function_name in v_aliases:
+            out.insert(line_num, tmp+'\n')
+        else:
+            inc = 0
+            tmp = pattern.findall(tmp)
+            tmp_lines = [piece.strip('"\'') for piece in tmp]
+            for line in tmp_lines:
+                inc += 1 
+                lines.insert(cur_pos+inc, line)
 
         line_num += 1
 
     elif function_name == "alias":
-        if args_list[0] == "variatic":
-            v_aliases[args_list[1].strip()] = args_list[2].strip()[1:]
-        else:
-            aliases[args_list[0].strip()] = args_list[1].strip()[1:] # 1: for quote
+        if args_list[0].strip() == "raw":
+            if args_list[1].strip() == "variatic":
+                v_aliases[args_list[2].strip()] = args_list[3].strip()[1:]
+            else:
+                aliases[args_list[1].strip()] = args_list[2].strip()[1:] # 1: for quote
+        elif args_list[0].strip() == "simple":
+            if args_list[1].strip() == "variatic":
+                s_v_aliases[args_list[2].strip()] = args_list[3].strip()[1:]
+            else:
+                s_aliases[args_list[1].strip()] = args_list[2].strip()[1:]
 
     elif function_name == "raw_asm":
         out.insert(line_num, f"{args_list[0]}\n")

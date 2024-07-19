@@ -15,7 +15,7 @@ begin_label(main);
 
 	call(printf, fmt, msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8);
 
-	alias(exit_w_3, "
+	alias(raw, exit_w_3, "
     mov rax, 60
     mov rdi, 3
     syscall

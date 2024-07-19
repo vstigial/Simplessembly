@@ -1,6 +1,6 @@
 global(main);
 begin_label(main);
-	alias(read, "
+	alias(raw, read, "
     mov rax, 0
     mov rdi, 0
     mov rsi, %{arg0}

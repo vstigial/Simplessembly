@@ -7,8 +7,7 @@ Generates x86-64 Linux Nasm assembly
 Generates Assembly, Assembles with Nasm, links with the GNU linker
 
 Working on:
-- Including other simplessembly files (use function)
-- Aliases written in simplessembly (currently written in regular nasm asm)
+- Removing boilerplate assembly in labels jumped to by str_compare
 - Better errors
 - Control flow (wip)
 - Interaction with the stack (push function) (wip)

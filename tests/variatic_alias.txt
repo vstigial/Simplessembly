@@ -2,7 +2,7 @@ global(main);
 begin_label(main);
 	external(printf);
 
-	alias(variatic, printf, "
+	alias(raw, variatic, printf, "
 
     mov rbp, rsp
     xor rax, rax
@@ -19,7 +19,7 @@ begin_label(main);
 
 	");
 
-	alias(read, "
+	alias(raw, read, "
     mov rax, 0
     mov rdi, 0
     mov rsi, %{arg0}
