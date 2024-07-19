@@ -14,6 +14,8 @@ v_aliases = {}
 dat_num = 0
 bss_num = 0
 txt_num = 0
+ret_lines = 0
+ret_func_def = False
 line_num = 0
 out.insert(line_num, "SECTION .bss\n")
 out.insert(line_num+1, "") # data section to avoid problems with list comprehension
@@ -77,19 +79,30 @@ for line in lines:
 
     elif function_name == "str_compare":
         # todo: remove the need for boilerplate asm in jumped functions
-        out.insert(6 + bss_num+dat_num+txt_num, f"loop_{str(line_num)}:\n")
-        out.insert(6 + bss_num+dat_num+txt_num+1, f"     mov al, [{args_list[0].strip()} + rdx]\n")
-        out.insert(6 + bss_num+dat_num+txt_num+2, f"     mov bl, [{args_list[1].strip()} + rdx]\n")
-        out.insert(6 + bss_num+dat_num+txt_num+3, "     inc rdx\n")
-        out.insert(6 + bss_num+dat_num+txt_num+4, "     cmp al, bl\n")
-        out.insert(6 + bss_num+dat_num+txt_num+5, f"     jne {args_list[3].strip()}\n")
-        out.insert(6+ bss_num+dat_num+txt_num+6, "     cmp al, 0\n")
-        out.insert(6 + bss_num+dat_num+txt_num+7, f"     je {args_list[2].strip()}\n")
-        out.insert(6 + bss_num+dat_num+txt_num+8, f"     jmp loop_{str(line_num)}\n")
+        if not ret_func_def:
+            out.insert(6 + bss_num+dat_num+txt_num, f"return_label:\n")
+            out.insert(6 + bss_num+dat_num+txt_num+1, f"    ret\n")
+            ret_func_def = True
+            ret_lines = 2
+        out.insert(6 + bss_num+dat_num+txt_num+ret_lines, f"loop_{str(line_num)}:\n")
+        out.insert(6 + bss_num+dat_num+txt_num+1+ret_lines, f"    mov al, [{args_list[0].strip()} + rdx]\n")
+        out.insert(6 + bss_num+dat_num+txt_num+2+ret_lines, f"    mov bl, [{args_list[1].strip()} + rdx]\n")
+        out.insert(6 + bss_num+dat_num+txt_num+3+ret_lines, "    inc rdx\n")
+        out.insert(6 + bss_num+dat_num+txt_num+4+ret_lines, "    cmp al, bl\n")
+        if args_list[3].strip() != "NULL":
+            out.insert(6 + bss_num+dat_num+txt_num+5+ret_lines, f"    jne {args_list[3].strip()}\n")
+        else:
+            out.insert(6 + bss_num+dat_num+txt_num+5+ret_lines, "    jne return_label\n")
+        out.insert(6 + bss_num+dat_num+txt_num+6+ret_lines, "    cmp al, 0\n")
+        if args_list[2].strip() != "NULL":
+            out.insert(6 + bss_num+dat_num+txt_num+7+ret_lines, f"    je {args_list[2].strip()}\n")
+        else:
+            out.insert(6 + bss_num+dat_num+txt_num+7+ret_lines, f"    je return_label\n")
+        out.insert(6 + bss_num+dat_num+txt_num+8+ret_lines, f"    jmp loop_{str(line_num)}\n")
 
-        out.insert(line_num+10, "    xor rdx, rdx\n")
-        out.insert(line_num+11, f"    call loop_{str(line_num)}\n")
-        line_num += 11
+        out.insert(line_num+10+ret_lines, "    xor rdx, rdx\n")
+        out.insert(line_num+11+ret_lines, f"    call loop_{str(line_num)}\n")
+        line_num += 11+ret_lines
 
     elif function_name in aliases:
         increment = 0
